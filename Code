@@ -1,0 +1,59 @@
+import java.net.*;
+import java.io.*;
+import java.util.Scanner;
+
+public class IterativeSocketServer {
+
+    public static void main(String[] args) throws java.io.IOException {
+        Scanner sc = new Scanner(System.in);
+        //Query user for port
+        System.out.println("Enter your desired port number: ");
+        int port = sc.nextInt();
+
+        //Create the ServerSocket
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server is running on port " + port);
+
+            while (true) {
+                try (Socket socket = serverSocket.accept()) { //accepts the client
+                    socket.setSoTimeout(30_000); //safety
+                    System.out.println("New connection from " + socket.getInetAddress());
+
+                    //Start of taking in data
+                    InputStream input = socket.getInputStream(); //input
+                    OutputStream output = socket.getOutputStream(); //output
+
+                    //Read Data as a string
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    PrintWriter writer = new PrintWriter(output, true); //writer flushes the data after each method call
+                    writer.println("This is a message sent to the server");
+
+                    // Read in one client from the user
+                    String line = reader.readLine();
+                    //Possibly implement error handling
+                    if (line == null){
+                        writer.println("ERROR: empty request");
+                        continue;
+                    }
+
+
+                    String op = line.trim().toUpperCase();
+                    String result;
+                    switch (op) {
+                        case "DATE_TIME":         result = run("date"); break;
+                        case "UPTIME":            result = run("uptime"); break;
+                        case "MEMORY_USE":        result = run("free -h"); break;
+                        case "NETSTAT":           result = run("ss -tuna || netstat -tuna"); break;
+                        case "CURRENT_USERS":     result = run("who"); break;
+                        case "RUNNING_PROCESSES": result = run("ps aux --sort -pcpu | head -n 25"); break;
+                        default:                  result = "ERROR: unknown request";
+                    }
+
+                    writer.println(result);
+
+                }
+            }
+            //close the socket
+        }
+    }
+}
