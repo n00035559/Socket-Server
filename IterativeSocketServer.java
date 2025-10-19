@@ -64,45 +64,32 @@ public class IterativeSocketServer {
                     String command = line.trim().toUpperCase();
 
                     switch (command) {
-                        case "DATE_TIME":
-                            writer.print(runCmd("cmd.exe", "/c", "echo %DATE% %TIME%"));
-                            break;
+                        case "DATE_TIME" -> writer.print(runCmd("sh", "-c", "date"));
 
-                        case "UPTIME":
-                            // Uptime info is shown by 'net stats srv' (look for "Statistics since...")
-                            writer.print(runCmd("cmd.exe", "/c", "net stats srv"));
-                            break;
+                        case "UPTIME" -> writer.print(runCmd("sh", "-c", "uptime"));
+                        
+                        // 'vm_stat' for macOS or 'free -h' for Linux;
+                        case "MEMORY_USE" -> writer.print(runCmd("sh", "-c", "vm_stat"));
 
-                        case "MEMORY_USE":
-                            // A quick summary pulled from systeminfo; findstr filters the lines
-                            writer.print(runCmd("cmd.exe", "/c", "systeminfo | findstr /I \"Memory\""));
-                            break;
+                        case "NETSTAT" -> writer.print(runCmd("sh", "-c", "netstat -anv"));
 
-                        case "NETSTAT":
-                            writer.print(runCmd("cmd.exe", "/c", "netstat -ano"));
-                            break;
+                        case "CURRENT_USERS" -> writer.print(runCmd("sh", "-c", "who"));
 
-                        case "CURRENT_USERS":
-                            // Lists users who have sessions on the machine/domain context
-                            writer.print(runCmd("cmd.exe", "/c", "query user"));
-                            break;
+                        case "RUNNING_PROCESSES" -> writer.print(runCmd("sh", "-c", "ps aux"));
 
-                        case "RUNNING_PROCESSES":
-                            writer.print(runCmd("cmd.exe", "/c", "tasklist"));
-                            break;
-
-                        default:
-                            writer.println("ERROR: Unknown operation '" + command + "'. "
+                        default -> writer.println("ERROR: Unknown operation '" + command + "'. "
                                     + "Supported: DATE_TIME, UPTIME, MEMORY_USE, NETSTAT, CURRENT_USERS, RUNNING_PROCESSES");
-                            break;
                     }
-// ensure a newline + flush for good measure
+                    
+                    // ensure a newline + flush for good measure
                     writer.println();
                     writer.flush();
-
+            
+                    //close the socket
+                    socket.close();
+                    System.out.println("Connection with " + socket.getInetAddress() + " closed.");
                 }
             }
-            //close the socket
         }
     }
 }
