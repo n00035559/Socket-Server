@@ -2,7 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.Scanner;
 
-public class IterativeSocketServer {
+public class Server {
 
     // Helper method for running the system commands
     private static String runCmd(String... args) {
